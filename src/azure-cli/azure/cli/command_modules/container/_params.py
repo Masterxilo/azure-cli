@@ -20,30 +20,30 @@ IP_ADDRESS_TYPES = ['Public', 'Private']
 
 
 def _environment_variables_type(value):
-    """Space-separated values in 'key=value' format."""
+    """Environment variable assignment in 'key=value' format."""
     try:
         env_name, env_value = value.split('=', 1)
         return {'name': env_name, 'value': env_value}
     except ValueError:
-        message = ("Incorrectly formatted environment settings. "
-                   "Argument values should be in the format a=b c=d")
+        message = ("Incorrectly formatted environment variable assignment. "
+                   "Assignment should be in the format 'a=b'.")
         raise CLIError(message)
 
 
 def _secure_environment_variables_type(value):
-    """Space-separated values in 'key=value' format."""
+    """Secure environment variable assignment in 'key=value' format."""
     try:
         env_name, env_secure_value = value.split('=', 1)
         return {'name': env_name, 'secureValue': env_secure_value}
     except ValueError:
-        message = ("Incorrectly formatted secure environment settings. "
-                   "Argument values should be in the format a=b c=d")
+        message = ("Incorrectly formatted secure environment variable assignment. "
+                   "Assignment should be in the format 'a=b'.")
         raise CLIError(message)
 
 
 secrets_type = CLIArgumentType(
     validator=validate_secrets,
-    help="space-separated secrets in 'key=value' format.",
+    help="One or more secret assignments in 'key=value' format.",
     nargs='+'
 )
 
@@ -63,20 +63,20 @@ def load_arguments(self, _):
         c.argument('memory', type=float, help='The required memory of the containers in GB, accurate to one decimal place')
         c.argument('os_type', arg_type=get_enum_type(OperatingSystemTypes), help='The OS type of the containers')
         c.argument('ip_address', arg_type=get_enum_type(IP_ADDRESS_TYPES), help='The IP address type of the container group')
-        c.argument('ports', type=int, nargs='+', default=[80], help='A list of ports to open. Space-separated list of ports')
+        c.argument('ports', type=int, nargs='+', default=[80], help='A list of ports to open. One or more decimal port numbers in the range 1-65535')
         c.argument('protocol', arg_type=get_enum_type(ContainerNetworkProtocol), help='The network protocol to use')
         c.argument('dns_name_label', help='The dns name label for container group with public IP')
         c.argument('restart_policy', arg_type=get_enum_type(ContainerGroupRestartPolicy), help='Restart policy for all containers within the container group')
         c.argument('command_line', help='The command line to run when the container is started, e.g. \'/bin/bash -c myscript.sh\'')
-        c.argument('environment_variables', nargs='+', options_list=['--environment-variables', '-e'], type=_environment_variables_type, help='A list of environment variable for the container. Space-separated values in \'key=value\' format.')
-        c.argument('secure_environment_variables', nargs='+', type=_secure_environment_variables_type, help='A list of secure environment variable for the container. Space-separated values in \'key=value\' format.')
+        c.argument('environment_variables', nargs='+', options_list=['--environment-variables', '-e'], type=_environment_variables_type, help='A list of environment variable assignments for the container. One or more assignments, each with the format \'key=value\'.')
+        c.argument('secure_environment_variables', nargs='+', type=_secure_environment_variables_type, help='A list of secure environment variable assignments for the container. One or more assignments, each with the format \'key=value\'.')
         c.argument('secrets', secrets_type)
         c.argument('secrets_mount_path', validator=validate_volume_mount_path, help="The path within the container where the secrets volume should be mounted. Must not contain colon ':'.")
         c.argument('file', options_list=['--file', '-f'], help="The path to the input file.")
         c.argument('zone', help="The zone to place the container group.")
 
     with self.argument_context('container create', arg_group='Managed Service Identity') as c:
-        c.argument('assign_identity', nargs='*', validator=validate_msi, help="Space-separated list of assigned identities. Assigned identities are either user assigned identities (resource IDs) and / or the system assigned identity ('[system]'). See examples for more info.")
+        c.argument('assign_identity', nargs='*', validator=validate_msi, help="List of one or more assigned identities. Assigned identities are either user assigned identities (resource IDs) and / or the system assigned identity ('[system]'). See examples for more info.")
         c.argument('identity_scope', options_list=['--scope'], help="Scope that the system assigned identity can access")
         c.argument('identity_role', options_list=['--role'], help="Role name or id the system assigned identity will have")
 
